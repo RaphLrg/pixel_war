@@ -1,0 +1,23 @@
+{
+  "name": "pixelwar",
+  "version": "1.0.0",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "bcrypt": "^5.1.0",
+    "bcryptjs": "^2.4.3",
+    "canvas": "*",
+    "ejs": "^3.1.8",
+    "express": "^4.18.2",
+    "express-session": "^1.17.3",
+    "jimp": "^0.16.2",
+    "sqlite3": "^5.1.4",
+    "ws": "^8.11.0"
+  },
+  "description": ""
+}
