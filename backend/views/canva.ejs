@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<!-- LIOTÉ Ruth -->
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Room</title>
+
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="assets/css/canva.css">
+    <link rel="stylesheet" media="screen" href="https://fontlibrary.org//face/minecraftia" type="text/css" />
+
+    <script src="assets/js/jquery.min.js"></script>
+</head>
+
+<body>
+
+    <%- include('navbar.ejs', {connected: connected, pseudo : pseudo, room : room}) %>
+
+        <div id="room_title">
+            <h2 id="room" class="titre_cadre"></h2>
+        </div>
+
+        <div id="app">
+
+            <div class="cadre2" v-if="locked">
+                <form method="dialog">
+                    <div class="bloc_room_pwd"><label for="password">Insert room's password</label></div>
+                    <div class="bloc_room_pwd"><input id="password" type="password" name="password"
+                            placeholder="Enter your password" v-model="submit_password_string"></div>
+                    <div class="bloc_room_pwd" id="bloc_room_pwd_button"><button
+                            v-on:click="submit_password()">Submit</button></div>
+                </form>
+            </div>
+
+            <div v-bind:style="style_visibility">
+
+                <div class="page_canva">
+                    <div class="cadre" id="side_menu">
+                        <div class="bloc_titre_1">
+                            <p id="timer"> 0 </p>
+                        </div>
+                        <div id="color_selectors">
+                            <h2 class="titre_cadre">Colors</h2>
+                            <table>
+                                <tr>
+                                    <td>
+                                        <div class="item_couleur" v-for="(mycolor, index) in color_ids"
+                                            v-on:click="change(colors[color_ids[index]-1].color)">
+                                            <input type="radio" name="select_color"
+                                                v-bind:value="colors[color_ids[index]-1].color" v-model="color_chosed"
+                                                onclick="getColorValue()" checked>
+                                            <label for="select_color"></label>
+                                            <span v-bind:style="{ color: colors[color_ids[index]-1].color }">⬤</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="canva_cadre">
+                        <canvas id="canvas"></canvas>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <div id="askToConnect" style="visibility: hidden;">
+            <p>You must be connected to modify the canvas</p>
+            <button class="bouton" onclick="askToConnect()">OK</button>
+        </div>
+
+        <script src="assets/js/jquery.min.js"></script>
+        <script src="assets/js/vue.js"></script>
+
+        <script vue>
+            // LIOTÉ Ruth
+            let pseudo = '<%= pseudo %>';
+            let userId = '<%= userId %>';
+            let vip_level = '<%= vipLevel %>';
+
+            // Quand un utilisateur n'est pas connecté il ne peut pas modifier le canva
+            console.log("pseudo : ", pseudo);
+            if (pseudo === '') {
+                document.getElementsByClassName('page_canva')[0].style.opacity = 0.25;
+                document.getElementById('askToConnect').style.visibility = 'visible';
+            }
+
+            function askToConnect() {
+                document.getElementById('askToConnect').style.visibility = 'hidden';
+            }
+
+            let address2 = window.location.search;
+            let parameterList2 = new URLSearchParams(address2);
+            let canvaName2 = parameterList2.get("name");
+
+            let room_nameh2 = '<h2 id="room" class="titre_cadre">' + canvaName2 + '</h2>';
+            document.getElementById("room").innerHTML = room_nameh2;
+
+            let color_brute = [];
+
+            const app = new Vue({
+                el: "#app",
+                data: {
+                    colors: [],
+                    color_ids: [],
+                    color_chosed: "",
+                    locked: true,
+                    password_hash: "",
+                    style_visibility: "visibility: visible",
+                    submit_password_string: "",
+                },
+                methods: {
+                    isValid: function (index) {
+                        if (typeof app.colors[app.color_ids[index]] === "undefined") {
+                            return false;
+                        }
+                        return true;
+                    },
+
+                    submit_password: function () {
+                        // Auteur : Léo Zedek
+
+                        //console.log('pass: ' + app.submit_password_string);
+                        $.ajax({
+                            type: "POST",
+                            url: "/canva/check_password",
+                            data: {
+                                submit_password: app.submit_password_string,
+                                room_name: canvaName2,
+                            },
+
+                            success: function (received) {
+                                if (received["good_password"]) {
+                                    app.locked = false;
+                                    app.style_visibility = "visibility: visible";
+                                }
+                            },
+                            error: function () {
+                                alert("Error AJAX");
+                            }
+                        });
+                    },
+
+                    change: (color_name) => {
+                        // Auteur : Raphaël Largeau
+                        app.color_chosed = color_name
+                    }
+                }
+            })
+
+            $.ajax({
+                // Auteur : Léo Zedek
+
+                type: "POST",
+                url: "/canva/get_password_hash",
+                data: { "name": canvaName2 },
+
+                success: function (received) {
+                    app._data.password_hash = received["password_hash"];
+
+                    if (app._data.password_hash == "") {
+                        app._data.locked = false;
+                        app._data.style_visibility = "visibility: visible";
+                    }
+                    else {
+                        app._data.locked = true;
+                        app._data.style_visibility = "visibility: hidden";
+                    }
+                },
+                error: function () {
+                    alert("Problème AJAX");
+                }
+            });
+
+            $.ajax({
+                // Auteur : Ruth Liote
+
+                type: 'POST',
+                url: '/canva/info',
+                data: { "name": canvaName2 },
+
+                async: false,
+                success: function (data) {
+
+                    color_brute = data.colors;
+
+                    //color_brute = '1:100,2:1,4:55,';
+
+                    //Mise en forme pour récupérer les ids des couleurs du colorstats
+                    color_brute = color_brute.split(/:\d+/);
+                    color_brute = color_brute.toString();
+                    color_brute = color_brute.split(",,");
+                    color_brute.pop();
+
+                    //Récupération des ids des couleurs
+                    app.color_ids = color_brute;
+                    //console.log(app.color_ids);
+
+                    app.colors = data.listColors;
+                    app.color_chosed = app.colors[app.color_ids[0]-1].color;
+                },
+
+                error: function () {
+                    alert('Problème AJAX');
+                }
+            });
+            
+        </script>
+        <script src="assets/js/canvas.js"></script>
+</body>
+
+</html>
