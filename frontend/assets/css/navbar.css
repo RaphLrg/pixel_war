@@ -1,0 +1,63 @@
+header{
+    margin-bottom: 20%;
+}
+
+@keyframes slide {
+    from {
+        transform: translateX(0%);    
+    }
+    to {
+        transform: translateX(-2500%);
+    }
+}
+
+#img_chat {
+    z-index: 0;
+    position: absolute;
+    height: 60px;
+    right: 0;
+    animation: slide 25s linear infinite;
+}
+
+
+nav{
+    font-size: 15px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    text-align: center;
+    display: flex;
+    position: absolute;
+    background-color: #515c7f;
+    width: 100%;
+    border-radius: 0;
+    height: 6vh;
+}
+
+.not_connected{
+    color: darkgray;
+    pointer-events: none;
+}
+
+nav a{
+    z-index: 10;
+    display: inline-block;
+    text-decoration: none;
+    text-align: center;
+    color: white;
+    margin: 10px;
+    padding: 5px;
+    transition-duration: 0.3s;
+}
+
+nav a:hover{
+    background-color: #8b9bcf;
+    opacity: .5;
+    color: black;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+}
+
+/* .color1 {color: #060606;}
+.color2 {color: #202439;}
+.color3 {color: #515c7f;}
+.color4 {color: #8b9bcf;}
+.color5 {color: #c1d3e8;} */

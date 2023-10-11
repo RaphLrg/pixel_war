@@ -1,0 +1,41 @@
+*{
+    border-width: 1mm;
+    border-color: gray;
+    border-radius: 2mm;
+    font-family: 'MinecraftiaRegular', 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+}
+
+body{
+    padding: 0;
+    margin: 0;
+    overflow: scroll;
+    background-color: #c1d3e8;
+
+}
+
+.cadre{
+    border-style: solid;
+    background-color: #eef0f0;
+}
+
+.titre_cadre{
+    text-align: center;
+}
+
+.cadre > form{
+    width: 90%;
+    margin: 5%;
+    display: flex;
+    flex-direction: column;
+}
+
+.cadre > form > div{
+    align-self: left;
+    margin-top: 2%;
+    width: 100%;
+}
+
+input, button, select{
+    border-width: 0.5mm;
+    border-radius: 1mm;
+}

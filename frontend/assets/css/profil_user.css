@@ -1,0 +1,57 @@
+body{
+    overflow: scroll;
+    
+}
+
+#app{
+    display: flex;
+}
+
+.cadre{
+    margin-top: 6vh;
+    margin-left: 5%;
+    margin-right: 5%;
+    padding: 2%;
+    text-align: center;
+    width: 40%;
+}
+
+#avatar{
+    border-style: solid;
+    width: 60%;
+
+}
+
+#vip_status{
+    position: relative;
+    background-color: #ffff7d;
+    z-index: 0;
+}
+
+#sparkle {
+    z-index: 10;
+    position: absolute;
+    margin-left: 11%;
+    height: 5vh;
+}
+
+.ligne_texte{
+    margin-top: 5mm;
+}
+
+.bouton{
+    margin: 0 0 2% 8% ;
+    width: 15vw;
+    padding: 0.5%;
+    font-size: medium;
+    background-color: #515c7f;
+    color: #e3effd;
+    transition-duration: 0.4s;
+}
+
+.bouton:hover{
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    border-color:#515c7f;
+    background-color: #e3effd;
+    color: #060606;
+}

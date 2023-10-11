@@ -1,0 +1,15 @@
+.cadre{
+    margin-top: 9vh;
+    margin-right: 10vw;
+    margin-left: 10vw;
+    padding: 2%;
+    text-align: center;
+}
+
+.ligne_texte{
+    margin-top: 5mm;
+}
+
+#histogram{
+    margin: 3%;
+}

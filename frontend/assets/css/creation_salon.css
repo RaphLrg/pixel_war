@@ -1,0 +1,66 @@
+.palette_couleurs{
+    text-align: center;
+    margin-top: 1%;
+    border-top-style: solid;
+    border-radius: 0;
+    width: 100%;
+}
+
+.tableau_couleur{
+    margin: 5% 5% 2% 5%;
+    display: flex;
+    width: 90%;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.item_couleur{
+    padding: 0 5mm 5mm 5mm;
+    width: fit-content;
+}
+
+.cadre{
+    margin-top: 20vh;
+    margin-right: 15vw;
+    margin-left: 15vw;
+    width: 70vw;
+    height: fit-content;
+    justify-content: center;
+}
+
+input[type=text],input[type=password],.select_label{
+    margin: .5% 0 .5% 5%;
+}
+
+.bouton-envoi{
+    justify-content: center;
+    display: flex;
+    width: 100%; 
+    margin: 2% 0;
+}
+
+#create_button{
+    margin: 0 0 2% 42% ;
+    width: 15%;
+    padding: 1%;
+    font-size: medium;
+    background-color: #515c7f;
+    color: #e3effd;
+    transition-duration: 0.4s;
+}
+
+#create_button:hover{
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    border-color:#515c7f;
+    background-color: #e3effd;
+    color: #060606;
+}
+
+.texte_erreur{
+    margin: 0 5%;
+}
+
+select{
+    margin: .5% 0;
+}
