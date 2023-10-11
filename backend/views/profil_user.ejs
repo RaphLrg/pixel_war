@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <script src="assets/js/jquery.min.js"></script>
+    <script src="assets/js/vue.js"></script>
+    <script src="assets/js/plotly-2.16.1.min.js"></script>
+
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="assets/css/profil_user.css">
+    <link rel="stylesheet" media="screen" href="https://fontlibrary.org//face/minecraftia" type="text/css" />
+
+    <title>User profile</title>
+</head>
+
+<body>
+
+    <%- include('navbar.ejs', {connected: connected, pseudo : pseudo, room : room}) %>
+
+
+        <div id="app">
+
+            <div class="cadre">
+                <h2 class="titre_cadre">Informations</h2>
+                <img id="avatar" v-bind:src="avatarPath" class="image">
+                <br>
+                <div class="ligne_texte" v-if="vipLevel=='VIP user'">
+                    <img id="sparkle" src="assets/img/sparkle_web.gif">
+                    <p id="vip_status"> Status : {{vipLevel}} </p>
+                </div>
+                <div id="normal_status" class="ligne_texte" v-if="vipLevel=='Normal user'">
+                    <p> Status : {{vipLevel}} </p>
+                </div>
+                <form method="dialog">
+                    <div class="ligne_texte">
+                        Username :
+                        <input type="text" class="new_pseudo" placeholder="new pseudo" v-on:keyup="checkValidPseudo()"
+                            v-model="pseudo" required>
+                    </div>
+                    <div class="ligne_texte">
+                        Password :
+                        <input type="password" class="new_password" placeholder="new password" v-model="pwdHash"
+                            required>
+                    </div>
+                    <div class="ligne_texte">
+                        New Avatar : <select v-model="avatar_id">
+                            <option value="0">default</option>
+                            <option value="1">black cat</option>
+                            <option value="2">ginger cat</option>
+                            <option value="3">beige cat</option>
+                            <option value="4">grey cat</option>
+                            <option value="5">white cat</option>
+                            <option value="6">drawn cat</option>
+                            <option value="7">drawn bear</option>
+                            <option value="8">drawn rabbit</option>
+                        </select>
+                    </div>
+                    <div v-if="notValidPseudo">
+                        <h3 style="color: red;" class="ligne_texte">this name is already taken</h3>
+                    </div>
+                    <div class="ligne_texte" v-if="!notValidPseudo">
+                        <input type="submit" class="bouton" v-on:click="update_profil()" value="Edit my info">
+                    </div>
+                </form>
+
+            </div>
+
+            <div class="cadre">
+                <h2 class="titre_cadre"> Statistics</h2>
+
+                <div class="ligne_texte">Number of pixels added : {{number_modifications}}</div>
+                <div class="ligne_texte">Colored pixels :</div>
+                <div id="histogram"></div>
+            </div>
+        </div>
+
+
+        <script type="text/javascript">
+            // Auteur de la balise script : Léo Zedek
+
+
+            function color_stats_string_to_json(color_stats) {
+                const colors = color_stats.split(",");
+                const result = {};
+
+                for (index in colors) {
+                    const color = colors[index].split(":");
+
+                    const id_color = color[0];
+                    const number_color = color[1];
+
+                    result[id_color] = number_color;
+
+                }
+
+                return result;
+            }
+
+            // Get ESJ variable
+            let id_user = '<%= id_user%>';
+
+            const app = new Vue({
+                el: "#app",
+                data: {
+                    number_modifications: null,
+                    pseudo: "",
+                    pwdHash: "",
+                    vipLevel: "",
+                    avatarPath: "assets/img/avatar_0.png",
+                    avatar_id: 0,
+                    notValidPseudo: false,
+                    current_pseudo: "",
+                },
+
+                methods: {
+                    //Adrien Gaulin
+                    checkValidPseudo: function () {
+                        if (app.current_pseudo === app.pseudo) {
+                            app.notValidPseudo = false
+                        } else {
+                            var pseudoToVerify = "pseudo=" + app.pseudo
+                            $.ajax({
+                                type: "POST",
+                                url: "/verify",
+                                data: pseudoToVerify,
+                                success: function (sucessResponse) {
+                                    app.notValidPseudo = sucessResponse
+
+                                }
+                            })
+                        }
+                    },
+                    update_profil() {
+
+                        if (app._data.pwdHash != '') {
+                            $.ajax({
+                                type: "POST",
+                                url: "/user_statistics/update_profil",
+                                data: {
+                                    id_user: id_user,
+                                    new_pseudo: app._data.pseudo,
+                                    new_password: app._data.pwdHash,
+                                    new_avatar_id: app._data.avatar_id
+
+                                },
+                                success: function (received_data) {
+                                    alert("Profile updated successfully !");
+                                    window.location.href = ('/');
+                                },
+                                error: function () {
+                                    alert("Error during updating profile");
+                                }
+                            });
+                        } else {
+                            alert("New password mustn't be empty !");
+                        }
+
+
+                    }
+                },
+            });
+
+            const vip_level_name = {
+                0: "Normal user",
+                1: "VIP user",
+            };
+
+            // AJAX request to get all the statistics of the user.
+            $.ajax({
+                type: "POST",
+                url: "/user_statistics/get_statistics",
+                data: { id: id_user },
+                success: function (received_data) {
+                    app._data.pseudo = received_data["pseudo"];
+                    app._data.current_pseudo = received_data["pseudo"];
+                    //app._data.pwdHash = received_data["pwd_hash"];
+                    app._data.number_modifications = received_data["nb_modif"];
+                    app._data.vipLevel = vip_level_name[received_data["vip_level"]];
+
+                    app._data.avatarPath = "assets/img/avatar_" + received_data["avatar_id"] + ".png";
+
+                    let color_stats = color_stats_string_to_json(received_data["color_stats"]);
+                    let colors_code_by_id = received_data["colors"];
+
+                    let numbers = [];
+                    let colors_code = [];
+                    let colors_name = [];
+
+                    let i = 1;
+                    for (id_color in color_stats) {
+                        let number_color = color_stats[id_color];
+
+                        if (number_color > 0) {
+                            numbers.push(color_stats[id_color]);
+                            colors_code.push(colors_code_by_id[id_color]);
+                            colors_name.push("Color " + i);//"Color " + colors_code_by_id[id_color]);
+                            i += 1;
+                        }
+                    }
+
+                    let data = [
+                        {
+                            histfunc: "sum",
+                            y: numbers,
+                            x: colors_name,
+                            type: "histogram",
+                            marker: {
+                                color: colors_code,
+                                line: {
+                                    width: 1,
+                                    color: "black",
+                                }
+                            },
+                        },
+                    ];
+
+                    let layout = {};
+
+                    Plotly.newPlot("histogram", data, layout, { staticPlot: true });
+
+
+                },
+                error: function () {
+                    console.log("Error AJAX");
+                }
+            });
+
+        </script>
+
+</body>
+
+</html>

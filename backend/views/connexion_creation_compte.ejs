@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="utf-8">
+	<meta content="width=device-width, initial-scale=1.0" name="viewport">
+	<link rel="stylesheet" href="assets/css/style.css">
+	<link rel="stylesheet" href="assets/css/connexion_creation_compte.css">
+	<link rel="stylesheet" media="screen" href="https://fontlibrary.org//face/minecraftia" type="text/css"/>
+	<title>Connexion/Creation compte</title>
+</head>
+
+<!-- Adrien Gaulin-->
+<body>
+	<%- include('navbar.ejs', {connected: connected, pseudo : pseudo, room : room}) %>
+
+	<div class="cadre">
+		<h2 class="titre_cadre">Connexion</h2>
+		<br>
+		<form action="/signin" method="post" role="form">
+			<div class="connexion"><input type="text" name="username_signin"  id="username_signin" class="entree_texte" placeholder="username" required></div>
+			<div class="connexion"><input type="password" name="password_signin"  id="password_signin" class="entree_texte" placeholder="password" required></div>
+			<div class="connexion"><button type="submit" id="submit_signin" class="entree_submit">Sign in</button></div>
+		</form>
+		<br>
+	</div>
+	<div class="cadre" name="logsignup" id="logsignup">
+		<h2 class="titre_cadre">Join Us</h2>
+		<br>
+		<form action="/signup" method="post" role="form">
+			<div><input v-on:keyup="checkValidPseudo()" type="text" name="username_signup" id="username_signup" class="entree_texte" placeholder="username" required></div>
+			<div><input type="password" name="password_signup" id="password_signup" class="entree_texte" placeholder="password" v-model="first_password" required></div>
+			<div><input type="password" name="password_confirm_signup" id="password_confirm_signup" class="entree_texte" placeholder="confirm the password" v-model="confirm_password" required></div>
+			<div>Avatar : <select name="avatar_selection" id="avatar_selection">
+				<option value="0">default</option>
+				<option value="1">black cat</option>
+				<option value="2">ginger cat</option>
+				<option value="3">beige cat</option>
+				<option value="4">grey cat</option>
+				<option value="5">white cat</option>
+				<option value="6">drawn cat</option>
+				<option value="7">drawn bear</option>
+				<option value="8">drawn rabbit</option>
+			</select></div>
+			<h3 v-if="notValidPseudo" style="color: red;" class="ligne_texte">this name is already taken</h3>
+			<div v-if="!notValidPseudo" class="button_div"><button v-if="!notValidPseudo" type="submit" id="submit_signup" class="entree_submit" v-on:click="verifyPassword()">Sign up</button></div>
+		</form>
+		<br>
+
+	</div>
+
+
+	<script src="assets/js/vue.js"></script>
+  	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
+
+	<!--Adrien Gaulin-->
+	<script type="text/javascript">
+		const app=new Vue({
+			el:"#logsignup",
+			data:{
+				notValidPseudo : false,
+				first_password : "",
+				confirm_password : "",
+
+			},
+			methods:{
+				verifyPassword : function() {
+					if (app._data.first_password !== app._data.confirm_password){
+						alert("the password confirmation is wrong : the user could not be created !")
+					}
+				},
+				checkValidPseudo: function() {
+					var pseudoToVerify = "pseudo=" + $("#username_signup").val()
+					$.ajax({
+						type: "POST",
+						url: "/verify",
+						data: pseudoToVerify,
+						success: function(sucessResponse) {
+							app.notValidPseudo = sucessResponse
+							
+						}
+					})
+				}
+			}
+
+		})
+	</script>
+
+
+</body>
+
+</html>

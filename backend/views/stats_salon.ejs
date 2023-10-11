@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <script src="assets/js/jquery.min.js"></script>
+    <script src="assets/js/vue.js"></script>
+    <script src="assets/js/plotly-2.16.1.min.js"></script>
+    
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="assets/css/stats_salon.css">
+    <title>Room statistics</title>
+</head>
+
+<body>
+    <%- include('navbar.ejs', {connected: connected, pseudo : pseudo, room : room}) %>
+
+    <div id = "app">
+        <div class="cadre">
+            <h1>Room's name : {{room_name}}</h1>
+            <h2 class="titre_cadre">Statistics</h2>
+
+            <div class="ligne_texte">Number of modified pixels : {{number_modifications}}</div>
+            <div class="ligne_texte">Colored pixels :</div>
+            <div id = "histogram"></div>
+        </div>
+    </div>
+
+    <script type="text/javascript">
+        // Auteur : Léo Zedek
+
+
+        function color_stats_string_to_json(color_stats) {
+            const colors = color_stats.split(",");
+            const result = {};
+
+            for (index in colors) {
+                const color = colors[index].split(":");
+
+                const id_color = color[0];
+                const number_color = color[1];
+
+                result[id_color] = number_color;
+
+            }
+
+            return result;
+        }
+        
+        const app = new Vue({
+            el:"#app",
+            data: {
+                number_modifications: null,
+                room_name: '<%= room_name%>',
+            },
+        });
+
+        // AJAX request to get all the statistics of the room and the colors.
+        $.ajax({
+            type: "POST",
+            url: "/room_statistics/get_statistics",
+            data : {name : app._data.room_name},
+            success: function(received_data) {
+                app._data.number_modifications = received_data["nb_modif"];
+
+                let color_stats = color_stats_string_to_json(received_data["color_stats"]);
+                let colors_code_by_id = received_data["colors"];
+
+                let numbers = [];
+                let colors_code = [];
+                let colors_name = [];
+
+                let i = 1;
+                for (id_color in color_stats) {
+                    let number_color = color_stats[id_color];
+
+                    if (number_color > 0) {
+                        numbers.push(color_stats[id_color]);
+                        colors_code.push(colors_code_by_id[id_color]);
+                        colors_name.push("Color " + i);//"Color " + colors_code_by_id[id_color]);
+                        i += 1;
+                    }
+                }
+
+                let data = [
+                    {
+                        histfunc : "sum",
+                        y : numbers,
+                        x : colors_name,
+                        type : "histogram",
+                        marker : {
+                            color : colors_code,
+                            line : {
+                                width : 1,
+                                color : "black",
+                            }
+                        },
+                    },
+                ];
+
+                let layout = {};
+
+                Plotly.newPlot("histogram", data, layout, {staticPlot: true});
+
+                
+            },
+            error: function() {
+              console.error("Error AJAX");
+            }
+          });
+
+    </script>
+
+</body>
+
+</html>

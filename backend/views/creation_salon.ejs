@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="assets/css/creation_salon.css">
+    <link rel="stylesheet" media="screen" href="https://fontlibrary.org//face/minecraftia" type="text/css"/>
+
+    <title>Create new room</title>
+</head>
+
+<body>
+
+    <%- include('navbar.ejs', {connected: connected, pseudo : pseudo, room : room}) %>
+
+    <div id="app" class="cadre">
+        <h2 class="titre_cadre">Create your room</h2>
+
+        <p v-if="name_exists" class="texte_erreur">This name is alredy used, choose another please</p>
+        <br v-if="name_exists" />
+        <p v-if="sql_err" class="texte_erreur">An error occured, please try again or contact us</p>
+        <br v-if="sql_err" />
+        <input v-model="name" type="text" class="entree_texte" placeholder="Name">
+        <br v-if="is_enabled" />
+        <input v-if="is_enabled" v-model="pwd" type="password" class="mot_de_passe" placeholder="Password">
+        <input v-model="is_enabled" type="checkbox" name="check_password">
+        <label v-on:click="is_enabled = !is_enabled" for="check_password">Enable password</label>
+        <br />
+        <label class="select_label" for="select_size">Canva size</label>
+        <select v-model="canva_size" name="select_size">
+            <option value="10">10x10</option>
+            <option value="25">25x25</option>
+            <option value="50">50x50</option>
+            <option value="75">75x75</option>
+            <option value="100">100x100</option>
+        </select>
+        <br />
+        <label class="select_label" for="select_rank">Access allowed for</label>
+        <select v-model="minimum_rank" name="select_rank">
+            <option value="0">everybody</option>
+            <option v-bind:disabled="!playerVIP" value="1">VIP</option>
+        </select>
+        <br />
+        <label class="select_label" for="select_time">Waiting time (for non VIP)</label>
+        <select v-model="time" name="select_time">
+            <option value="0">none</option>
+            <option value="30">30 secondes</option>
+            <option value="60">1 minute</option>
+            <option value="120">2 minutes</option>
+            <option value="300">5 minutes</option>
+            <option value="600">10 minutes</option>
+        </select>
+        <br />
+        <label class="select_label" for="select_time_VIP">Waiting time (for VIP)</label>
+        <select v-model="vip_time" name="select_time_VIP">
+            <option value="0">none</option>
+            <option value="30">30 secondes</option>
+            <option value="60">1 minute</option>
+            <option value="120">2 minutes</option>
+            <option value="300">5 minutes</option>
+            <option value="600">10 minutes</option>
+        </select>
+
+        <div class="palette_couleurs">
+            <p>Select your color palette</p>
+            <div class="tableau_couleur">
+                <div class="item_couleur" v-for="mycolor in colors" :key="mycolor.id" v-on:click="change(mycolor.id)">
+                    <input v-model="color_selected[mycolor.id]" type="checkbox" name="select_color">
+                    <label for="select_color">Select</label>
+                    <span v-bind:style="{ color: mycolor.color }">⬤</span>
+                </div>
+            </div>
+        </div>
+        <div v-on:click="submit()" class="bouton_envoi"><button id="create_button">Create</button></div>
+    </div>
+</body>
+
+<script src="assets/js/jquery.min.js"></script>
+<script src="assets/js/vue.js"></script>
+
+<script>
+    // Raphaël Largeau
+    const app = new Vue({
+        el: "#app",
+        data: {
+            name: "",
+            pwd: "",
+            is_enabled: false,
+            colors: [],
+            color_selected: [],
+            name_exists: false,
+            sql_err: false,
+            minimum_rank: 0,
+            canva_size: "10",
+            time: 60,
+            vip_time: 30,
+            playerVIP: false
+        },
+        methods: {
+            submit: () => {
+                if (app.name !== "" && (!app.is_enabled || app.pwd !== "")) {
+                    if (!app.is_enabled) {
+                        app.pwd = "";
+                    }
+                    $.ajax({
+                        type: 'POST',
+                        url: '/create_room/submit',
+                        data: {
+                            name: app.name,
+                            pwd: app.pwd,
+                            color_selected: app.color_selected,
+                            minimum_rank: app.minimum_rank,
+                            canva_size: app.canva_size,
+                            time: app.time,
+                            vip_time: app.vip_time
+                        },
+                        success: function (received) {
+                            console.log(received);
+                            if (received.exists) {
+                                app.name_exists = true;
+                            } else if (received.err) {
+                                app.sql_err = true;
+                            } else {
+                                window.location.href = received.redirect;
+                            }
+                        },
+                        error: function () {
+                            alert('Problème AJAX');
+                        }
+                    })
+                }
+            },
+            change: (id) => {
+                Vue.set(app.color_selected, id, !app.color_selected[id]);
+            },
+        }
+    });
+
+    // Raphaël Largeau
+    $.ajax({
+        type: 'POST',
+        url: '/create_room/colors',
+        success: function (received) {
+            app.colors = received.colors;
+            for (index in received.colors) {
+                app.color_selected.push(true);
+            }
+            if (received.playerRank !== undefined) {
+                app.playerVIP = received.playerRank == 1;
+            } else {
+                window.location.href = "/connexion"
+            }
+        },
+        error: function () {
+            alert('Problème AJAX');
+        }
+    });
+</script>
+
+</html>

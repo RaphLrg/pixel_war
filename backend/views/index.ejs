@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+
+    <title>HOME</title>
+
+    <!-- Template Main CSS File -->
+    <link href="assets/css/style.css" rel="stylesheet">
+    <link href="assets/css/index.css" rel="stylesheet">
+    <link rel="stylesheet" media="screen" href="https://fontlibrary.org//face/minecraftia" type="text/css"/>
+
+
+</head>
+
+<body>
+    <%- include('navbar.ejs', {connected: connected, pseudo : pseudo, room : room}) %>
+
+    <div id="pixelwar">
+        <h1>
+            <span style="color:#1e21e2">P</span>
+            <span style="color:#252857">I</span>
+            <span style="color:#00ff40">X</span>
+            <span style="color:#e5f13b">E</span>
+            <span style="color:#f3dada">L</span>
+            <span style="color:#00f7ff">W</span>
+            <span style="color:#cc00ff">A</span>
+            <span style="color:#FF0000">R</span>
+        </h1>
+    </div>
+
+    <img id="sparkle1" src="assets/img/sparkle_web.gif">
+    <img id="sparkle2" src="assets/img/sparkle_web.gif">
+
+    <div id="app" class="cadre">
+
+        <h2 class="titre_cadre">HOME</h2>
+
+        <div class="liste_salon">
+            <div v-for="row in rows" v-if="vip_level_authorized(row.minimumRank)" v-on:click="go_to(row.name)"
+                class="element_salon">
+                <img v-bind:src="img_src(row.avatarName)" class="image_salon">
+                <div class="texte_liste">{{ row.name }} </div>
+            </div>
+        </div>
+
+        <div class="boutons">
+            <a v-if="!connected" href="connexion"><button class="bouton">JOIN</button></a>
+            <a v-if="connected" href="create_room"><button class="bouton">CREATE</button></a>
+        </div>
+
+    </div>
+
+</body>
+
+
+<script src="assets/js/jquery.min.js"></script>
+<script src="assets/js/vue.js"></script>
+
+<script>
+    // Raphaël Largeau
+    const app = new Vue({
+        el: "#app",
+        data: {
+            rows: [],
+            playerRank: 0,
+            connected: false
+        },
+        methods: {
+            img_src: (name) => {
+                return "assets/img/canvas/" + name;
+            },
+            go_to: (name) => {
+                window.location.href = "canva?name=" + name;
+            },
+            vip_level_authorized: (minimumRank) => {
+                return app.playerRank >= minimumRank
+            }
+        }
+    });
+
+    // Raphaël Largeau
+    $.ajax({
+        type: 'POST',
+        url: '/data_room',
+        success: function (received) {
+            app.rows = received.rows;
+            if (received.playerRank !== undefined) {
+                app.playerRank = received.playerRank;
+            }
+            if (received.connected !== undefined) {
+                app.connected = received.connected;
+            }
+            console.log(app.rows, app.playerRank, app.connected);
+        },
+        error: function () {
+            alert('Problème AJAX');
+        }
+    });
+</script>
+
+</html>

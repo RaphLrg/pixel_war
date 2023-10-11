@@ -1,0 +1,54 @@
+<!--Adrien Gaulin-->
+<link href="assets/css/navbar.css" rel="stylesheet">
+<link rel="stylesheet" media="screen" href="https://fontlibrary.org//face/minecraftia" type="text/css"/>
+
+
+<nav id="navbar" class="navbar">
+    <img id="img_chat" src="assets/img/MANEKI.gif">
+    <a href="/">Home</a>
+    <a href="/connexion">Log In/Sign Up</a>
+    <% if(connected) { %>
+        <a href="/create_room">Create Room</a>
+        <% if(room===undefined){ %>
+            <a href="/room_statistics" class="not_connected">Rooms Statistics</a>
+            <% } else { %>
+                <a href="/room_statistics?name=<%= room %>">Rooms Statistics</a>
+                <% } %>
+                    <a href="/user_statistics"><%- pseudo %>'s Statistics</a>
+                    <a v-on:click="logout()">Log out</a>
+                    <% } else { %>
+                        <a href="/create_room" class="not_connected">Create Room</a>
+                        <a href="/room_statistics" class="not_connected">Rooms Statistics</a>
+                        <a href="/user_statistics" class="not_connected">Users Statistics</a>
+                        <% } %>
+</nav>
+<br>
+
+<script src="assets/js/jquery.min.js"></script>
+<script src="assets/js/vue.js"></script>
+
+<script>
+    // Raphaël Largeau
+    const bar = new Vue({
+        el: "#navbar",
+        data: {
+        },
+        methods: {
+            logout: () => {
+                $.ajax({
+                    type: 'POST',
+                    url: '/logout',
+                    success: function (received) {
+                        window.location.href = received;
+                    },
+                    error: function () {
+                        alert('Problème AJAX');
+                    }
+                });
+            },
+        }
+    });
+
+    // Raphaël Largeau
+
+</script>
